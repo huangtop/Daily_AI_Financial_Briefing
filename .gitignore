@@ -1,0 +1,43 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Core logic files (not pushed to GitHub)
+Daily AI Financial Briefing.py
+deduplicate_json.py
+news_cache.json
+*.txt
+*.md
+
+# Keep only display files
+!Daily AI Financial Briefing.html
+!source_distribution.png
+
+# Cache files
+news_cache.json
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Streamlit secrets (contains API keys)
+.streamlit/secrets.toml

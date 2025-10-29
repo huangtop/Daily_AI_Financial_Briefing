@@ -1,0 +1,15 @@
+name: Update Briefing
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # 每日早上9點 UTC (調整時區如果需要)
+  workflow_dispatch:  # 手動觸發
+
+jobs:
+  update-briefing:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Update briefing via API
+      run: |
+        curl -X POST https://your-api.onrender.com/update
