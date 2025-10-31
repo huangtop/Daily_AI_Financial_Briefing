@@ -2,7 +2,7 @@ name: Daily Briefing Generation
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # 每天早上8點UTC (台灣時間下午4點)
+    - cron: '0 0 * * *'  # 每天早上8點台灣時間 (00:00 UTC)
   workflow_dispatch:  # 手動觸發
 
 jobs:
