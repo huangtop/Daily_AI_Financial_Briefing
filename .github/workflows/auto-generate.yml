@@ -45,6 +45,7 @@ jobs:
         from langdetect import detect
         from difflib import SequenceMatcher
         import subprocess
+        import feedparser
         
         # 設定
         news_api_key = os.getenv("NEWS_API_KEY")
@@ -128,12 +129,12 @@ jobs:
         # 過濾新聞
         filtered_articles = []
         for a in articles:
-            title = a.get('title', '')
-            desc = a.get('description', '')
+            title = a.get('title', '') or ''
+            desc = a.get('description', '') or ''
             
             # 跳過明顯的廣告內容
             ad_keywords = ['CNN.com', 'Travel Snapshots', 'iReporter photos', 'Submit your best shots', 'Click here for more photos']
-            if any(keyword in desc for keyword in ad_keywords):
+            if desc and any(keyword in desc for keyword in ad_keywords):
                 continue
                 
             # 跳過沒有摘要的文章（通常是低質量的feed）
