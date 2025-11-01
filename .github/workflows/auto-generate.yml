@@ -105,10 +105,11 @@ jobs:
         
         for i, (a, s, ch) in enumerate(zip(filtered_articles, summaries, chinese_summaries), 1):
             formatted_ch = format_chinese_summary(ch)
+            newline_pattern = chr(10) + chr(10)
             html += f"""
             <h2>{i}. {a['title']}</h2>
             <p><strong>Summary:</strong> {s['summary_text']}</p>
-            <p><strong>中文摘要:</strong> {formatted_ch.replace('\n\n', '<br><br>')}</p>
+            <p><strong>中文摘要:</strong> {formatted_ch.replace(newline_pattern, '<br><br>')}</p>
             """
         
         html += "</body></html>"
