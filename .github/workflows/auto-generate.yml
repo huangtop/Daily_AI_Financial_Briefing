@@ -224,8 +224,12 @@ jobs:
         git config --local user.name "GitHub Action"
         # 檢查是否有新內容
         if [ -s "Daily AI Financial Briefing.html" ] && grep -q "Top Trends:" "Daily AI Financial Briefing.html"; then
-          # 拉取最新更改以避免衝突
+          # 丟棄本地更改以確保 clean working directory
+          git reset --hard
+          # 拉取最新更改
           git pull --rebase origin main
+          # 重新生成文件（因為 reset 丟棄了它們）
+          python generate_briefing.py
           git add "Daily AI Financial Briefing.html" source_distribution.png
           git commit -m "Update daily briefing $(date +'%Y-%m-%d')" || echo "No changes to commit"
           git push
