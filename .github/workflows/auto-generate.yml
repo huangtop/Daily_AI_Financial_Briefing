@@ -221,6 +221,8 @@ jobs:
         git config --local user.name "GitHub Action"
         # 檢查是否有新內容
         if [ -s "Daily AI Financial Briefing.html" ] && grep -q "Top Trends:" "Daily AI Financial Briefing.html"; then
+          # 拉取最新更改以避免衝突
+          git pull --rebase origin main
           git add "Daily AI Financial Briefing.html" source_distribution.png
           git commit -m "Update daily briefing $(date +'%Y-%m-%d')" || echo "No changes to commit"
           git push
