@@ -46,6 +46,9 @@ jobs:
         # 設定
         news_api_key = os.getenv("NEWS_API_KEY")
         
+        # 關鍵字列表
+        KEYWORDS = ['earnings', 'revenue', 'profit', 'q1', 'q2', 'q3', 'q4', 'beats', 'misses', 'stock', 'market cap', 'valuation', 'shares', 'ai', 'artificial intelligence', 'new product', 'launch', 'partnership', 'investment', 'acquisition', 'google', 'microsoft', 'apple', 'tesla', 'nvidia', 'amazon', 'meta', 'openai', 'trump', 'policy', 'decision', 'neo cloud', 'nebius', 'robotaxi', 'optimus', 'rocket', 'nuclear', 'crypto', 'oklo', 'nukz', 'smr', 'arm', 'msft', 'googl', 'pltr', 'tsla', 'nvda', 'aapl', 'meta', 'google', 'microsoft', 'openai', 'chatgpt', 'tesla', 'nvidia', 'amazon', 'tsmc', 'neo cloud', 'aws', 'blockchain', 'nebius', 'nbis', 'semiconductor', 'csp', 'asic', 'elon musk', 'sam altman', 'morgan stanley', 'trump', 'apple', 'robotaxi', 'energy', 'quantum computing', '5g', 'optimus', 'neuralink', 'spacex', 'fed']
+        
         def translate_to_zh(text):
             if not text or len(text.strip()) == 0:
                 return "（無摘要）"
@@ -73,21 +76,77 @@ jobs:
         today = date.today()
         yesterday = today - timedelta(days=1)
         url = f"https://newsapi.org/v2/everything?q=finance+OR+earnings+OR+revenue+AI&from={yesterday}&to={today}&sortBy=publishedAt&apiKey={news_api_key}&pageSize=100&language=en"
-        response = requests.get(url, timeout=10)
-        data = response.json()
-        articles = data.get("articles", [])[:50]
         
-        # 簡單過濾
+        try:
+            response = requests.get(url, timeout=10)
+            data = response.json()
+            articles = data.get("articles", [])[:50]
+        except Exception as e:
+            print(f"Error fetching news: {e}")
+            articles = []
+
+        # 從 RSS 獲取更多新聞
+        rss_feeds = [
+            "https://finance.yahoo.com/rss/",
+            "https://feeds.bloomberg.com/markets/news.rss", 
+            "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+            "https://feeds.reuters.com/reuters/topNews",
+            "https://techcrunch.com/feed/"
+        ]
+        
+        for rss_url in rss_feeds:
+            try:
+                feed = feedparser.parse(rss_url)
+                source_name = rss_url.split('//')[1].split('/')[0]
+                if 'yahoo' in source_name:
+                    source_name = 'Yahoo Finance'
+                elif 'bloomberg' in source_name:
+                    source_name = 'Bloomberg'
+                elif 'cnbc' in source_name:
+                    source_name = 'CNBC'
+                elif 'reuters' in source_name:
+                    source_name = 'Reuters'
+                elif 'techcrunch' in source_name:
+                    source_name = 'TechCrunch'
+                
+                for entry in feed.entries[:10]:  # 每個 RSS 取 10 篇
+                    article = {
+                        "title": entry.title,
+                        "description": getattr(entry, 'summary', ''),
+                        "url": entry.link,
+                        "source": {"name": source_name},
+                        "publishedAt": getattr(entry, 'published', '')
+                    }
+                    articles.append(article)
+            except Exception as e:
+                print(f"RSS {rss_url} 失敗: {e}")
+        
+        # 過濾新聞
         filtered_articles = []
         for a in articles:
             title = a.get('title', '')
             desc = a.get('description', '')
-            if 'finance' in (title + desc).lower() or 'stock' in (title + desc).lower():
+            
+            # 跳過明顯的廣告內容
+            ad_keywords = ['CNN.com', 'Travel Snapshots', 'iReporter photos', 'Submit your best shots', 'Click here for more photos']
+            if any(keyword in desc for keyword in ad_keywords):
+                continue
+                
+            # 跳過沒有摘要的文章（通常是低質量的feed）
+            if not desc or len(desc.strip()) < 10:
+                continue
+                
+            # 過濾條件 - 標題必須包含關鍵字
+            title_has_keyword = any(keyword.lower() in title.lower() for keyword in KEYWORDS)
+            
+            # 通過條件：標題有關鍵字
+            if title_has_keyword:
                 try:
                     if detect(title) in ['en', 'zh']:
                         filtered_articles.append(a)
                 except:
-                    pass
+                    filtered_articles.append(a)  # 如果語言檢測失敗，仍保留
+        
         filtered_articles = filtered_articles[:30]
         
         # 生成摘要
@@ -97,13 +156,23 @@ jobs:
         descriptions = [a.get('description', a['title'])[:512] for a in filtered_articles]
         summaries = generator(descriptions, max_length=120, min_length=50, truncation=True)
         
+        # 分析趨勢
+        trends = {}
+        for title in [a['title'] for a in filtered_articles]:
+            for word in KEYWORDS:
+                if word.lower() in title.lower():
+                    trends[word] = trends.get(word, 0) + 1
+        top_trends = sorted(trends.items(), key=lambda x: x[1], reverse=True)[:3]
+        
         # 翻譯
         chinese_summaries = [translate_to_zh(s['summary_text']) for s in summaries]
         
         # 生成HTML
+        trends_str = ', '.join([f'{k}: {v} mentions' for k, v in top_trends])
         html = f"""<!DOCTYPE html>
         <html><head><title>AI Financial Briefing</title></head><body>
         <h1>AI Financial Briefing Headlines (Generated on {today})</h1>
+        <p>Top Trends: {trends_str}</p>
         """
         
         for i, (a, s, ch) in enumerate(zip(filtered_articles, summaries, chinese_summaries), 1):
