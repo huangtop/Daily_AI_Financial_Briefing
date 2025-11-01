@@ -178,64 +178,7 @@ jobs:
         
         # 生成HTML
         trends_str = ', '.join([f'{k}: {v} mentions' for k, v in top_trends]) if top_trends else 'No trends available'
-        html = '''<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Financial Briefing</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #ffffff;
-            color: #333333;
-        }
-        h1 {
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 10px;
-        }
-        h2 {
-            color: #34495e;
-            margin-top: 30px;
-            font-size: 1.3em;
-        }
-        .trends {
-            background-color: #ecf0f1;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        .article {
-            margin-bottom: 25px;
-            padding: 15px;
-            border-left: 4px solid #3498db;
-            background-color: #f8f9fa;
-        }
-        .summary {
-            margin: 10px 0;
-            color: #555555;
-        }
-        .chinese-summary {
-            background-color: #e8f4f8;
-            padding: 10px;
-            border-radius: 3px;
-            margin-top: 10px;
-            color: #2c3e50;
-        }
-        strong {
-            color: #2c3e50;
-        }
-    </style>
-</head>
-<body>
-'''
+        html = '<!DOCTYPE html>\n<html lang="zh-TW">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>AI Financial Briefing</title>\n    <style>\n        body {\n            font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif;\n            line-height: 1.6;\n            max-width: 800px;\n            margin: 0 auto;\n            padding: 20px;\n            background-color: #1e1e1e;\n            color: #ffffff;\n        }\n        h1 {\n            color: #ffffff;\n            border-bottom: 2px solid #3498db;\n            padding-bottom: 10px;\n        }\n        h2 {\n            color: #cccccc;\n            margin-top: 30px;\n            font-size: 1.3em;\n        }\n        .trends {\n            background-color: #333333;\n            padding: 15px;\n            border-radius: 5px;\n            margin: 20px 0;\n            font-weight: bold;\n            color: #ffffff;\n        }\n        .article {\n            margin-bottom: 25px;\n            padding: 15px;\n            border-left: 4px solid #3498db;\n            background-color: #2a2a2a;\n        }\n        .summary {\n            margin: 10px 0;\n            color: #cccccc;\n        }\n        .chinese-summary {\n            background-color: #333333;\n            padding: 10px;\n            border-radius: 3px;\n            margin-top: 10px;\n            color: #ffffff;\n        }\n        strong {\n            color: #ffffff;\n        }\n    </style>\n</head>\n<body>\n'
         html += f'<h1>🗞️AI Financial Briefing Headlines</h1>\n'
         html += f'<p class="trends">Top Trends: {trends_str}</p>\n'
         
