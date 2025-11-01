@@ -3,11 +3,11 @@ import requests
 
 st.set_page_config(
     page_title="AI Financial Briefing",
-    page_icon="📈",
+    page_icon="📰",
     layout="wide"
 )
 
-st.title("📈 AI Financial Briefing")
+st.title("📰AI Financial Briefing")
 st.markdown("每日 AI 財經簡報 - 自動生成雙語金融新聞摘要")
 
 # GitHub raw URLs
@@ -22,6 +22,20 @@ try:
     if html_response.status_code == 200:
         html_content = html_response.text
         st.success("✅ 今日簡報已載入")
+
+        # 顯示更新時間
+        import re
+        from datetime import datetime
+        
+        # 嘗試從 HTML 中提取生成日期
+        date_match = re.search(r'Generated on (\d{4}-\d{2}-\d{2})', html_content)
+        if date_match:
+            update_date = date_match.group(1)
+            st.info(f"📅 最後更新: {update_date}")
+        else:
+            # 如果找不到日期，使用當前時間
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            st.info(f"📅 載入時間: {current_time}")
 
         # Display the briefing using HTML
         st.components.v1.html(html_content, height=800, scrolling=True)
