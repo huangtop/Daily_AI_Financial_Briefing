@@ -108,7 +108,7 @@ jobs:
             html += f"""
             <h2>{i}. {a['title']}</h2>
             <p><strong>Summary:</strong> {s['summary_text']}</p>
-            <p><strong>中文摘要:</strong> {formatted_ch.replace(chr(10) + chr(10), '<br><br>')}</p>
+            <p><strong>中文摘要:</strong> {formatted_ch.replace('\n\n', '<br><br>')}</p>
             """
         
         html += "</body></html>"
