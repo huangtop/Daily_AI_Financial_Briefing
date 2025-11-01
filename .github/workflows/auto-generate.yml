@@ -26,6 +26,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install requests feedparser matplotlib transformers torch torchvision langdetect
         
+    - name: Set environment variables
+      run: echo "NEWS_API_KEY=${{ secrets.NEWS_API_KEY }}" >> $GITHUB_ENV
+        
     - name: Create generation script
       run: |
         cat > generate_briefing.py << 'EOF'
