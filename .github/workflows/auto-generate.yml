@@ -97,6 +97,7 @@ jobs:
         for rss_url in rss_feeds:
             try:
                 feed = feedparser.parse(rss_url)
+                print(f"RSS {rss_url}: {len(feed.entries)} entries found")
                 source_name = rss_url.split('//')[1].split('/')[0]
                 if 'yahoo' in source_name:
                     source_name = 'Yahoo Finance'
@@ -148,13 +149,17 @@ jobs:
                     filtered_articles.append(a)  # 如果語言檢測失敗，仍保留
         
         filtered_articles = filtered_articles[:30]
+        print(f"過濾後剩餘 {len(filtered_articles)} 篇文章")
         
         # 生成摘要
-        generator = pipeline('summarization', model='facebook/bart-large-cnn')
-        sentiments = [{'label': 'POSITIVE', 'score': 0.8}] * len(filtered_articles)  # 簡化
-        
-        descriptions = [a.get('description', a['title'])[:512] for a in filtered_articles]
-        summaries = generator(descriptions, max_length=120, min_length=50, truncation=True)
+        try:
+            generator = pipeline('summarization', model='sshleifer/distilbart-cnn-6-6')
+            descriptions = [a.get('description', a['title'])[:512] for a in filtered_articles]
+            summaries = generator(descriptions, max_length=120, min_length=50, truncation=True)
+            print(f'Generated {len(summaries)} summaries')
+        except Exception as e:
+            print(f'Summarization failed: {e}')
+            summaries = [{'summary_text': a.get('description', a['title'])[:200] + '...'} for a in filtered_articles]
         
         # 分析趨勢
         trends = {}
@@ -168,35 +173,43 @@ jobs:
         chinese_summaries = [translate_to_zh(s['summary_text']) for s in summaries]
         
         # 生成HTML
-        trends_str = ', '.join([f'{k}: {v} mentions' for k, v in top_trends])
-        html = f"""<!DOCTYPE html>
-        <html><head><title>AI Financial Briefing</title></head><body>
-        <h1>AI Financial Briefing Headlines (Generated on {today})</h1>
-        <p>Top Trends: {trends_str}</p>
-        """
+        trends_str = ', '.join([f'{k}: {v} mentions' for k, v in top_trends]) if top_trends else 'No trends available'
+        html = '<!DOCTYPE html>\n<html><head><title>AI Financial Briefing</title></head><body>\n'
+        html += f'<h1>AI Financial Briefing Headlines (Generated on {today})</h1>\n'
+        html += f'<p>Top Trends: {trends_str}</p>\n'
         
-        for i, (a, s, ch) in enumerate(zip(filtered_articles, summaries, chinese_summaries), 1):
-            formatted_ch = format_chinese_summary(ch)
-            # Pre-compute the replacement to avoid backslashes in f-string
-            safe_formatted_ch = formatted_ch.replace('\n\n', '<br><br>')
-            html += f"""
-            <h2>{i}. {a['title']}</h2>
-            <p><strong>Summary:</strong> {s['summary_text']}</p>
-            <p><strong>中文摘要:</strong> {safe_formatted_ch}</p>
-            """
+        if filtered_articles:
+            for i, (a, s, ch) in enumerate(zip(filtered_articles, summaries, chinese_summaries), 1):
+                formatted_ch = format_chinese_summary(ch)
+                # Pre-compute the replacement to avoid backslashes in f-string
+                safe_formatted_ch = formatted_ch.replace('\n\n', '<br><br>')
+                html += f'<h2>{i}. {a["title"]}</h2>\n'
+                html += f'<p><strong>Summary:</strong> {s["summary_text"]}</p>\n'
+                html += f'<p><strong>中文摘要:</strong> {safe_formatted_ch}</p>\n'
+        else:
+            html += '<p>No relevant articles found today.</p>\n'
         
-        html += "</body></html>"
+        html += '</body></html>'
         
         with open("Daily AI Financial Briefing.html", "w", encoding="utf-8") as f:
             f.write(html)
         
         # 生成圖表
-        sources = [a.get('source', {}).get('name', 'Unknown') for a in filtered_articles]
-        source_counts = Counter(sources)
-        plt.figure(figsize=(8, 6))
-        plt.pie(list(source_counts.values()), labels=list(source_counts.keys()), autopct='%1.1f%%')
-        plt.title('News Source Distribution')
-        plt.savefig('source_distribution.png')
+        try:
+            sources = [a.get('source', {}).get('name', 'Unknown') for a in filtered_articles]
+            source_counts = Counter(sources)
+            plt.figure(figsize=(8, 6))
+            plt.pie(list(source_counts.values()), labels=list(source_counts.keys()), autopct='%1.1f%%')
+            plt.title('News Source Distribution')
+            plt.savefig('source_distribution.png')
+            print('Chart generated successfully')
+        except Exception as e:
+            print(f'Chart generation failed: {e}')
+            # 創建一個空的圖表文件
+            plt.figure(figsize=(8, 6))
+            plt.text(0.5, 0.5, 'No data available', ha='center', va='center')
+            plt.title('News Source Distribution')
+            plt.savefig('source_distribution.png')
         EOF
         
     - name: Generate briefing
