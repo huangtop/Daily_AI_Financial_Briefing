@@ -206,6 +206,11 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add "Daily AI Financial Briefing.html" source_distribution.png
-        git commit -m "Update daily briefing $(date +'%Y-%m-%d')" || echo "No changes to commit"
-        git push
+        # 檢查是否有新內容
+        if [ -s "Daily AI Financial Briefing.html" ] && grep -q "Top Trends:" "Daily AI Financial Briefing.html"; then
+          git add "Daily AI Financial Briefing.html" source_distribution.png
+          git commit -m "Update daily briefing $(date +'%Y-%m-%d')" || echo "No changes to commit"
+          git push
+        else
+          echo "No new content to commit - briefing appears to be empty"
+        fi
