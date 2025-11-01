@@ -178,18 +178,77 @@ jobs:
         
         # 生成HTML
         trends_str = ', '.join([f'{k}: {v} mentions' for k, v in top_trends]) if top_trends else 'No trends available'
-        html = '<!DOCTYPE html>\n<html><head><title>AI Financial Briefing</title></head><body>\n'
-        html += f'<h1>AI Financial Briefing Headlines (Generated on {today})</h1>\n'
-        html += f'<p>Top Trends: {trends_str}</p>\n'
+        html = '''<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Financial Briefing</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            color: #333333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            font-size: 1.3em;
+        }
+        .trends {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .article {
+            margin-bottom: 25px;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            background-color: #f8f9fa;
+        }
+        .summary {
+            margin: 10px 0;
+            color: #555555;
+        }
+        .chinese-summary {
+            background-color: #e8f4f8;
+            padding: 10px;
+            border-radius: 3px;
+            margin-top: 10px;
+            color: #2c3e50;
+        }
+        strong {
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+'''
+        html += f'<h1>🗞️AI Financial Briefing Headlines</h1>\n'
+        html += f'<p class="trends">Top Trends: {trends_str}</p>\n'
         
         if filtered_articles:
             for i, (a, s, ch) in enumerate(zip(filtered_articles, summaries, chinese_summaries), 1):
                 formatted_ch = format_chinese_summary(ch)
                 # Pre-compute the replacement to avoid backslashes in f-string
                 safe_formatted_ch = formatted_ch.replace('\n\n', '<br><br>')
+                html += f'<div class="article">\n'
                 html += f'<h2>{i}. {a["title"]}</h2>\n'
-                html += f'<p><strong>Summary:</strong> {s["summary_text"]}</p>\n'
-                html += f'<p><strong>中文摘要:</strong> {safe_formatted_ch}</p>\n'
+                html += f'<div class="summary"><strong>Summary:</strong> {s["summary_text"]}</div>\n'
+                html += f'<div class="chinese-summary"><strong>中文摘要:</strong> {safe_formatted_ch}</div>\n'
+                html += f'</div>\n'
         else:
             html += '<p>No relevant articles found today.</p>\n'
         
