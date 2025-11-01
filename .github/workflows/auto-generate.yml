@@ -1,6 +1,9 @@
 name: Daily Briefing Generation
 
 on:
+  push:
+    paths:
+      - '.github/workflows/auto-generate.yml'
   schedule:
     - cron: '0 0 * * *'  # 每天早上8點台灣時間 (00:00 UTC)
   workflow_dispatch:  # 手動觸發
